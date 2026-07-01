@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Loader2, Send } from "lucide-react";
@@ -35,55 +35,65 @@ const DIMENSIONS = [
     id: "tangibles",
     title: "1 - TANGIBLES (Bukti Fisik)",
     questions: [
-      { id: "tangibles_1", text: "Seberapa baik pemanfaatan sarana dan prasarana pelayanan publik?" },
-      { id: "tangibles_2", text: "Seberapa baik pemanfaatan teknologi dalam proses pelayanan?" },
-      { id: "tangibles_3", text: "Seberapa baik pemanfaatan sumber daya manusia dalam meningkatkan kualitas pelayanan?" }
+      { id: "tangibles_1", text: "Fasilitas pelayanan tersedia dalam kondisi baik dan memadai." },
+      { id: "tangibles_2", text: "Ruang pelayanan bersih, nyaman, dan tertata rapi." },
+      { id: "tangibles_3", text: "Peralatan yang digunakan dalam pelayanan berfungsi dengan baik." },
+      { id: "tangibles_4", text: "Petugas pelayanan berpenampilan rapi dan profesional." },
+      { id: "tangibles_5", text: "Informasi pelayanan mudah ditemukan dan dipahami." }
     ]
   },
   {
     id: "reliability",
     title: "2 - RELIABILITY (Keandalan)",
     questions: [
-      { id: "reliability_1", text: "Seberapa baik pembagian tugas serta kewenangan dalam organisasi?" },
-      { id: "reliability_2", text: "Seberapa baik prosedur pelayanan dalam mendukung kelancaran pelayanan?" },
-      { id: "reliability_3", text: "Seberapa baik ketepatan waktu dalam penyelesaian pelayanan?" }
+      { id: "reliability_1", text: "Pelayanan diberikan sesuai dengan prosedur yang berlaku." },
+      { id: "reliability_2", text: "Petugas menyelesaikan pelayanan sesuai waktu yang dijanjikan." },
+      { id: "reliability_3", text: "Hasil pelayanan yang diterima sudah sesuai dengan kebutuhan." },
+      { id: "reliability_4", text: "Petugas memberikan pelayanan secara konsisten kepada setiap pengguna layanan." },
+      { id: "reliability_5", text: "Kesalahan dalam proses pelayanan jarang terjadi." }
     ]
   },
   {
     id: "responsiveness",
     title: "3 - RESPONSIVENESS (Daya Tanggap)",
     questions: [
-      { id: "responsiveness_1", text: "Seberapa baik arahan pemimpin dalam mendukung pelayanan?" },
-      { id: "responsiveness_2", text: "Seberapa baik kerja sama antarbidang dalam menyelesaikan suatu masalah?" },
-      { id: "responsiveness_3", text: "Seberapa baik komunikasi antarunit kerja?" }
+      { id: "responsiveness_1", text: "Petugas segera melayani ketika masyarakat membutuhkan bantuan." },
+      { id: "responsiveness_2", text: "Petugas cepat menanggapi pertanyaan atau keluhan." },
+      { id: "responsiveness_3", text: "Informasi yang dibutuhkan diberikan dengan cepat." },
+      { id: "responsiveness_4", text: "Petugas bersedia membantu ketika terjadi kendala dalam pelayanan." },
+      { id: "responsiveness_5", text: "Waktu tunggu pelayanan tergolong cepat." }
     ]
   },
   {
     id: "assurance",
     title: "4 - ASSURANCE (Jaminan)",
     questions: [
-      { id: "assurance_1", text: "Seberapa baik pengawasan terhadap pelaksanaan pelayanan?" },
-      { id: "assurance_2", text: "Seberapa baik kompetensi pegawai?" },
-      { id: "assurance_3", text: "Seberapa baik pengembangan dan pelatihan pegawai?" }
+      { id: "assurance_1", text: "Petugas memiliki kemampuan yang baik dalam memberikan pelayanan." },
+      { id: "assurance_2", text: "Petugas memberikan informasi yang jelas dan dapat dipercaya." },
+      { id: "assurance_3", text: "Saya merasa aman dalam menggunakan layanan yang diberikan." },
+      { id: "assurance_4", text: "Petugas bersikap sopan dan menghormati pengguna layanan." },
+      { id: "assurance_5", text: "Petugas mampu memberikan kepastian terhadap proses pelayanan." }
     ]
   },
   {
     id: "empathy",
     title: "5 - EMPATHY (Empati)",
     questions: [
-      { id: "empathy_1", text: "Seberapa baik dukungan pemimpin dalam menyelesaikan kendala?" },
-      { id: "empathy_2", text: "Seberapa baik evaluasi yang dilakukan pemimpin?" },
-      { id: "empathy_3", text: "Seberapa baik jumlah pegawai yang tersedia?" }
+      { id: "empathy_1", text: "Petugas memberikan perhatian kepada setiap pengguna layanan." },
+      { id: "empathy_2", text: "Petugas melayani tanpa membedakan latar belakang pengguna layanan." },
+      { id: "empathy_3", text: "Petugas memahami kebutuhan masyarakat dengan baik." },
+      { id: "empathy_4", text: "Petugas berkomunikasi dengan ramah dan santun." },
+      { id: "empathy_5", text: "Petugas memberikan solusi yang sesuai terhadap permasalahan pengguna layanan." }
     ]
   }
 ];
 
 const LIKERT_OPTIONS = [
-  { value: 1, label: "Sangat Tidak Baik" },
-  { value: 2, label: "Tidak Baik" },
-  { value: 3, label: "Cukup" },
-  { value: 4, label: "Baik" },
-  { value: 5, label: "Sangat Baik" }
+  { value: 1, label: "Sangat Tidak Setuju" },
+  { value: 2, label: "Tidak Setuju" },
+  { value: 3, label: "Netral" },
+  { value: 4, label: "Setuju" },
+  { value: 5, label: "Sangat Setuju" }
 ];
 
 const JABATAN_OPTIONS = [
@@ -111,6 +121,13 @@ const JABATAN_OPTIONS = [
   }
 ];
 
+const MASA_JABATAN_OPTIONS = [
+  { value: "0-5 tahun", label: "0-5 tahun" },
+  { value: "5-10 tahun", label: "5-10 tahun" },
+  { value: "10-15 tahun", label: "10-15 tahun" },
+  { value: "15-20 tahun", label: "15-20 tahun" }
+];
+
 export default function AssessmentClient({ institutions }: { institutions: any[] }) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -127,6 +144,7 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
 
   // Section 1 State
   const [jabatan, setJabatan] = useState("");
+  const [masaJabatan, setMasaJabatan] = useState("");
   const [instansiDinilai, setInstansiDinilai] = useState("");
 
   const [districts, setDistricts] = useState<Region[]>([]);
@@ -140,8 +158,21 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
     getDistricts('3211').then(setDistricts);
   }, []);
 
+  const combinedOptions = useMemo(() => {
+    const opts: any[] = [];
+    districts.forEach(d => {
+      institutions.forEach(inst => {
+        opts.push({
+          value: `${d.name}||${inst.id}`,
+          label: `${d.name} - ${inst.name}`
+        });
+      });
+    });
+    return opts;
+  }, [districts, institutions]);
+
   const findFirstIncompleteStep = () => {
-    if (!jabatan || !selectedDistName || !instansiDinilai) return 0;
+    if (!jabatan || !masaJabatan || !selectedDistName || !instansiDinilai) return 0;
     for (let i = 0; i < DIMENSIONS.length; i++) {
       const dim = DIMENSIONS[i];
       const hasUnanswered = dim.questions.some(q => !answers[q.id]);
@@ -159,8 +190,8 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
     if (currentStep === 0) {
       const missing: string[] = [];
       if (!jabatan) missing.push('field-jabatan');
-      if (!selectedDistName) missing.push('field-kecamatan');
-      if (!instansiDinilai) missing.push('field-instansi');
+      if (!masaJabatan) missing.push('field-masajabatan');
+      if (!selectedDistName || !instansiDinilai) missing.push('field-instansi');
 
       if (missing.length > 0) {
         setMissingFields(missing);
@@ -220,7 +251,7 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
         jabatan,
         kecamatan: selectedDistName,
         institution_id: instansiDinilai,
-        answers
+        answers: { ...answers, _metadata_masa_jabatan: masaJabatan }
       };
       await submitAssessment(payload);
 
@@ -254,13 +285,6 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
     }
   };
 
-  const LIKERT_OPTIONS = [
-    { value: 1, label: "Sangat Tidak Baik" },
-    { value: 2, label: "Tidak Baik" },
-    { value: 3, label: "Cukup" },
-    { value: 4, label: "Baik" },
-    { value: 5, label: "Sangat Baik" },
-  ];
 
   return (
     <div className="min-h-screen flex flex-col bg-neutral-50 font-sans text-neutral-900 relative">
@@ -300,7 +324,7 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
               {currentStep === 0 && (
                 <div className="text-neutral-700 text-sm md:text-base leading-relaxed space-y-4 text-justify">
                   <p>
-                    Website Penilaian Restrukturisasi Berbasis Kualitas Pelayanan Publik merupakan sistem yang dirancang untuk membantu Organisasi Perangkat Daerah (OPD) dalam melakukan evaluasi dan penilaian restrukturisasi organisasi berdasarkan indikator kualitas pelayanan publik. Sistem ini bertujuan meningkatkan efektivitas organisasi serta kualitas pelayanan kepada masyarakat melalui proses penilaian yang lebih cepat, objektif, dan terukur.
+                    Penilaian Restrukturisasi Berbasis Kualitas Pelayanan Publik merupakan sistem yang dirancang untuk membantu Organisasi Perangkat Daerah (OPD) dalam melakukan evaluasi dan penilaian restrukturisasi organisasi berdasarkan indikator kualitas pelayanan publik. Sistem ini bertujuan meningkatkan efektivitas organisasi serta kualitas pelayanan kepada masyarakat melalui proses penilaian yang lebih cepat, objektif, dan terukur.
                   </p>
                   <p>
                     Data dan penilaian yang diberikan akan menjadi bahan evaluasi dalam mendukung perbaikan tata kelola pemerintahan yang lebih efektif, transparan, dan berorientasi pada kebutuhan masyarakat. Mohon mengisi seluruh pertanyaan secara objektif sesuai dengan kondisi yang sebenarnya agar hasil evaluasi dapat digunakan sebagai dasar pengambilan keputusan dan pengembangan organisasi di masa mendatang.
@@ -314,7 +338,7 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
                       <li><strong>Assurance (jaminan)</strong><br />Pengetahuan serta sikap pegawai yang menumbuhkan rasa aman dan percaya masyarakat.</li>
                       <li><strong>Empathy (empati)</strong><br />Sikap tulus serta perhatian organisasi publik dalam memahami kebutuhan Masyarakat.</li>
                     </ol>
-                    <p className="mt-3 text-neutral-500 font-medium">Jumlah pertanyaan dalam survei ini berjumlah 15 pertanyaan dengan masing-masing dimensi 3 pertanyaan.</p>
+                    <p className="mt-3 text-neutral-500 font-medium">Jumlah pertanyaan dalam survei ini berjumlah 25 pertanyaan dengan masing-masing dimensi 5 pertanyaan.</p>
                   </div>
                 </div>
               )}
@@ -333,7 +357,7 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
                 </div>
               </div>
 
-              <div className="min-h-[400px]">
+              <div className="min-h-[250px]">
                 {/* SECTION 1 */}
                 {currentStep === 0 && (
                   <motion.section
@@ -346,75 +370,69 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
                     <h2 className="text-xl md:text-2xl font-bold mb-8 pb-4 border-b border-neutral-100 text-neutral-900">Informasi Penilai</h2>
 
                     <div className="space-y-6">
-                      <div className="z-50 relative mb-6" id="field-jabatan">
-                        <label className="block text-sm font-semibold text-neutral-800 mb-2">Jabatan <span className="text-red-500">*</span></label>
-                        {mounted && (
-                          <Select
-                            instanceId="jabatan-select"
-                            aria-label="Jabatan"
-                            options={JABATAN_OPTIONS}
-                            styles={customSelectStyles}
-                            placeholder="Pilih jabatan Anda"
-                            value={jabatan ? { label: jabatan, value: jabatan } : null}
-                            onChange={(selected: any) => { setJabatan(selected.value); setMissingFields(m => m.filter(x => x !== 'field-jabatan')); }}
-                            menuPortalTarget={document.body}
-                          />
-                        )}
-                        {missingFields.includes('field-jabatan') && <span className="text-red-500 text-xs mt-1 block">Wajib dipilih</span>}
-                      </div>
-
-                      <div className="grid grid-cols-1 gap-5 z-40 relative">
-                        <div id="field-kecamatan">
-                          <label className="block text-sm font-semibold text-neutral-800 mb-2">Kecamatan <span className="text-red-500">*</span></label>
+                      {/* Jabatan & Masa Jabatan */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 z-50 relative">
+                        <div id="field-jabatan">
+                          <label className="block text-sm font-semibold text-neutral-800 mb-2">Jabatan <span className="text-red-500">*</span></label>
                           {mounted && (
                             <Select
-                              instanceId="kecamatan-select"
-                              aria-label="Kecamatan"
-                              options={districts.map(d => ({ value: d.name, label: d.name }))}
+                              instanceId="jabatan-select"
+                              aria-label="Jabatan"
+                              options={JABATAN_OPTIONS}
                               styles={customSelectStyles}
-                              placeholder="Ketik atau pilih Kecamatan..."
-                              value={selectedDistName ? { value: selectedDistName, label: selectedDistName } : null}
-                              onChange={(selected: any) => {
-                                setSelectedDistName(selected?.value || "");
-                                setMissingFields(m => m.filter(x => x !== 'field-kecamatan'));
-                              }}
-                              isSearchable
-                              noOptionsMessage={() => "Tidak ada data"}
+                              placeholder="Pilih jabatan Anda"
+                              value={jabatan ? { label: jabatan, value: jabatan } : null}
+                              onChange={(selected: any) => { setJabatan(selected.value); setMissingFields(m => m.filter(x => x !== 'field-jabatan')); }}
                               menuPortalTarget={document.body}
                             />
                           )}
-                          {missingFields.includes('field-kecamatan') && <span className="text-red-500 text-xs mt-1 block">Wajib dipilih</span>}
+                          {missingFields.includes('field-jabatan') && <span className="text-red-500 text-xs mt-1 block">Wajib dipilih</span>}
+                        </div>
+
+                        <div id="field-masajabatan">
+                          <label className="block text-sm font-semibold text-neutral-800 mb-2">Masa Jabatan <span className="text-red-500">*</span></label>
+                          {mounted && (
+                            <Select
+                              instanceId="masajabatan-select"
+                              aria-label="Masa Jabatan"
+                              options={MASA_JABATAN_OPTIONS}
+                              styles={customSelectStyles}
+                              placeholder="Pilih masa jabatan"
+                              value={masaJabatan ? { label: masaJabatan, value: masaJabatan } : null}
+                              onChange={(selected: any) => { setMasaJabatan(selected.value); setMissingFields(m => m.filter(x => x !== 'field-masajabatan')); }}
+                              menuPortalTarget={document.body}
+                            />
+                          )}
+                          {missingFields.includes('field-masajabatan') && <span className="text-red-500 text-xs mt-1 block">Wajib dipilih</span>}
                         </div>
                       </div>
 
-                      <div className="pt-6 border-t border-neutral-100 relative z-10" id="field-instansi">
-                        <label className="block text-sm font-semibold text-neutral-800 mb-2">
-                          Instansi yang Dinilai <span className="text-red-500">*</span>
-                        </label>
-                        <p className="text-xs text-neutral-500 mb-3">Pilih instansi pelayanan publik yang Anda evaluasi hari ini.</p>
-                        {mounted && (
-                          <Select
-                            instanceId="inst-dinilai-select"
-                            aria-label="Instansi yang Dinilai"
-                            options={institutions.map(inst => ({ value: inst.id, label: inst.name }))}
-                            styles={{
-                              ...customSelectStyles,
-                              control: (base, state) => ({
-                                ...customSelectStyles.control(base, state),
-                                padding: '6px'
-                              })
-                            }}
-                            placeholder="Ketik atau pilih instansi..."
-                            value={instansiDinilai ? { value: instansiDinilai, label: institutions.find(i => i.id === instansiDinilai)?.name || "" } : null}
-                            onChange={(selected: any) => {
-                              setInstansiDinilai(selected?.value || "");
-                              setMissingFields(m => m.filter(x => x !== 'field-instansi'));
-                            }}
-                            isSearchable
-                            menuPortalTarget={document.body}
-                          />
-                        )}
-                        {missingFields.includes('field-instansi') && <span className="text-red-500 text-xs mt-1 block">Wajib dipilih</span>}
+                      {/* Kecamatan & Instansi Combined */}
+                      <div className="grid grid-cols-1 gap-5 pt-6 border-t border-neutral-100 z-40 relative">
+                        <div id="field-instansi">
+                          <label className="block text-sm font-semibold text-neutral-800 mb-2">
+                            Kecamatan & Instansi yang Dinilai <span className="text-red-500">*</span>
+                          </label>
+                          {mounted && (
+                            <Select
+                              instanceId="inst-dinilai-select"
+                              aria-label="Kecamatan dan Instansi yang Dinilai"
+                              options={combinedOptions}
+                              styles={customSelectStyles}
+                              placeholder="Ketik kecamatan atau instansi..."
+                              value={combinedOptions.find(o => o.value === `${selectedDistName}||${instansiDinilai}`) || null}
+                              onChange={(selected: any) => {
+                                const [dist, inst] = selected.value.split("||");
+                                setSelectedDistName(dist);
+                                setInstansiDinilai(inst);
+                                setMissingFields(m => m.filter(x => x !== 'field-instansi'));
+                              }}
+                              isSearchable
+                              menuPortalTarget={document.body}
+                            />
+                          )}
+                          {missingFields.includes('field-instansi') && <span className="text-red-500 text-xs mt-1 block">Wajib dipilih</span>}
+                        </div>
                       </div>
                     </div>
                   </motion.section>
@@ -434,7 +452,7 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
                       <div className="mb-8 pb-4 border-b border-neutral-100">
                         <span className="inline-block px-3 py-1 bg-neutral-100 text-neutral-700 rounded-full text-xs font-bold tracking-wider uppercase mb-3">Dimensi Penilaian</span>
                         <h2 className="text-xl md:text-2xl font-bold text-neutral-900 tracking-tight">{dim.title}</h2>
-                        <p className="text-sm text-neutral-500 mt-2">Beri penilaian dengan skala 1 (Sangat Tidak Baik) hingga 5 (Sangat Baik).</p>
+                        <p className="text-sm text-neutral-500 mt-2">Beri penilaian dengan skala 1 (Sangat Tidak Setuju) hingga 5 (Sangat Setuju).</p>
                       </div>
 
                       <div className="space-y-8">
@@ -480,7 +498,7 @@ export default function AssessmentClient({ institutions }: { institutions: any[]
               </div>
 
               {/* Navigation Footer */}
-              <div className="flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-0 pt-8 mt-8 border-t border-neutral-100 relative z-10">
+              <div className="flex flex-col-reverse sm:flex-row justify-between items-stretch sm:items-center gap-3 sm:gap-0 pt-5 mt-5 border-t border-neutral-100 relative z-10">
                 {currentStep > 0 ? (
                   <Button type="button" variant="outline" onClick={handlePrev} className="rounded-xl w-full sm:w-auto h-14 sm:h-12 text-base sm:text-sm font-semibold">
                     Kembali

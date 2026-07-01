@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { CheckCircle2, Info, Sparkles, Lightbulb } from "lucide-react";
+import { CheckCircle2, Info, Sparkles, Lightbulb, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import confetti from "canvas-confetti";
-import { useEffect, Suspense } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
 function getScoreData(score: number) {
@@ -14,6 +14,7 @@ function getScoreData(score: number) {
       status: "Sangat Tidak Baik",
       recommendation: "Kondisi sangat jauh dari harapan dan hampir tidak mendukung pelayanan. Indikator tidak berjalan dengan baik, sering menimbulkan hambatan, keluhan, atau kegagalan dalam proses pelayanan.",
       rekomendasi: "Menyusun ulang visi, misi serta tujuan yang berbasis kualitas pelayanan publik.",
+      rekomendasiDetail: "Menambahkan komitmen pelayanan prima dalam visi dan misi, menetapkan target kepuasan masyarakat sebagai indikator kinerja, serta menyusun rencana strategis yang berfokus pada peningkatan kualitas pelayanan.",
       textColor: "text-rose-600",
       bgSoft: "bg-rose-50",
       borderSoft: "border-rose-100",
@@ -23,7 +24,8 @@ function getScoreData(score: number) {
     return {
       status: "Tidak Baik",
       recommendation: "Kondisi masih kurang memadai dan belum mampu mendukung pelayanan secara optimal. Indikator sudah ada atau diterapkan, tetapi pelaksanaannya masih banyak kekurangan sehingga pelayanan sering terganggu.",
-      rekomendasi: "Lakukan survei kepuasan kepada masyarakat untuk dasar perbaikan pelayanan.",
+      rekomendasi: "Melakukan survei kepuasan masyarakat sebagai dasar perbaikan pelayanan.",
+      rekomendasiDetail: "Menyebarkan kuesioner kepuasan secara berkala, menyediakan kotak saran atau kanal pengaduan digital, serta mengevaluasi hasil survei untuk memperbaiki aspek pelayanan yang masih lemah.",
       textColor: "text-amber-600",
       bgSoft: "bg-amber-50",
       borderSoft: "border-amber-100",
@@ -34,6 +36,7 @@ function getScoreData(score: number) {
       status: "Cukup",
       recommendation: "Kondisi cukup memadai dan mampu mendukung pelayanan pada tingkat dasar. Indikator telah berjalan sesuai standar minimum, namun masih terdapat beberapa kelemahan yang perlu diperbaiki.",
       rekomendasi: "Menguatkan kualitas SDM melalui berbagai pelatihan berbasis kompetensi.",
+      rekomendasiDetail: "Menyelenggarakan pelatihan pelayanan prima (service excellence), komunikasi publik, etika pelayanan, penggunaan teknologi informasi, dan peningkatan kompetensi sesuai bidang tugas pegawai.",
       textColor: "text-violet-600",
       bgSoft: "bg-violet-50",
       borderSoft: "border-violet-100",
@@ -44,6 +47,7 @@ function getScoreData(score: number) {
       status: "Baik",
       recommendation: "Kondisi sudah berjalan dengan baik dan mendukung pelayanan secara efektif. Indikator terlaksana secara konsisten, hanya terdapat sedikit kendala yang tidak terlalu memengaruhi kualitas pelayanan.",
       rekomendasi: "Mengembangkan sistem serta inovasi pelayanan publik.",
+      rekomendasiDetail: "Menerapkan layanan berbasis digital (e-service), sistem antrean elektronik, aplikasi pengaduan masyarakat, layanan terpadu satu pintu, serta penyederhanaan prosedur pelayanan.",
       textColor: "text-blue-600",
       bgSoft: "bg-blue-50",
       borderSoft: "border-blue-100",
@@ -53,7 +57,8 @@ function getScoreData(score: number) {
     return {
       status: "Sangat Baik",
       recommendation: "Kondisi sangat optimal dan menjadi pendukung utama kualitas pelayanan. Indikator berjalan secara maksimal, efektif, efisien, dan mampu memberikan dampak positif yang signifikan terhadap pelayanan.",
-      rekomendasi: "Mempertahankan dan mengembangkan inovasi pelayanan publik berkelanjutan.",
+      rekomendasi: "Mempertahankan dan mengembangkan inovasi pelayanan publik secara berkelanjutan.",
+      rekomendasiDetail: "Melakukan evaluasi inovasi secara berkala, mengembangkan fitur layanan digital baru, memberikan penghargaan kepada unit kerja berprestasi, serta menjadikan inovasi yang berhasil sebagai praktik terbaik (best practice) yang diterapkan di seluruh unit pelayanan.",
       textColor: "text-emerald-600",
       bgSoft: "bg-emerald-50",
       borderSoft: "border-emerald-100",
@@ -80,6 +85,133 @@ function ThankYouContent() {
   const data = score !== null ? getScoreData(score) : null;
   const dimsList = parseDims(dimsString);
   const router = useRouter();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    if (!data || score === null) return;
+    setIsDownloading(true);
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF('p', 'mm', 'a4');
+      
+      const marginLeft = 20;
+      let currentY = 20;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const contentWidth = pageWidth - (marginLeft * 2);
+
+      const getHex = (status: string) => {
+        switch (status) {
+          case 'Sangat Tidak Baik': return { bg: '#fff1f2', text: '#e11d48', bar: '#f43f5e' };
+          case 'Tidak Baik': return { bg: '#fffbeb', text: '#d97706', bar: '#f59e0b' };
+          case 'Cukup': return { bg: '#f5f3ff', text: '#7c3aed', bar: '#8b5cf6' };
+          case 'Baik': return { bg: '#eff6ff', text: '#2563eb', bar: '#3b82f6' };
+          default: return { bg: '#ecfdf5', text: '#059669', bar: '#10b981' };
+        }
+      };
+      
+      const colors = getHex(data.status);
+
+      // TITLE
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "bold");
+      doc.text("Hasil Penilaian Kualitas Pelayanan Publik", pageWidth/2, currentY, { align: "center" });
+      currentY += 15;
+
+      // SCORE BOX
+      doc.setFillColor(colors.bg);
+      doc.roundedRect(marginLeft, currentY, contentWidth, 25, 3, 3, "F");
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text("SKOR PENILAIAN", marginLeft + 5, currentY + 8);
+      
+      doc.setFontSize(24);
+      doc.setTextColor(colors.text);
+      doc.text(`${score}%`, marginLeft + 5, currentY + 20);
+
+      // STATUS BADGE
+      doc.setFillColor(colors.text);
+      doc.roundedRect(pageWidth - marginLeft - 45, currentY + 7, 40, 10, 5, 5, "F");
+      doc.setFontSize(10);
+      doc.setTextColor(255, 255, 255);
+      doc.text(data.status, pageWidth - marginLeft - 25, currentY + 14, { align: "center" });
+      
+      currentY += 35;
+
+      // DIMENSIONS
+      if (dimsList.length > 0) {
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont("helvetica", "bold");
+        doc.text("Skor per Dimensi", marginLeft, currentY);
+        currentY += 8;
+
+        dimsList.forEach(dim => {
+          doc.setFontSize(10);
+          doc.setTextColor(50, 50, 50);
+          doc.setFont("helvetica", "normal");
+          doc.text(dim.title, marginLeft, currentY);
+          
+          doc.setFontSize(10);
+          doc.setTextColor(0, 0, 0);
+          doc.setFont("helvetica", "bold");
+          doc.text(`${dim.pct}%`, pageWidth - marginLeft, currentY, { align: "right" });
+          
+          currentY += 3;
+          
+          doc.setFillColor(230, 230, 230);
+          doc.roundedRect(marginLeft, currentY, contentWidth, 3, 1.5, 1.5, "F");
+          
+          doc.setFillColor(colors.bar);
+          doc.roundedRect(marginLeft, currentY, contentWidth * (dim.pct / 100), 3, 1.5, 1.5, "F");
+          
+          currentY += 10;
+        });
+        currentY += 5;
+      }
+
+      // INFORMASI HASIL
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.text("Informasi Hasil", marginLeft, currentY);
+      currentY += 6;
+      
+      doc.setFontSize(10);
+      doc.setTextColor(50, 50, 50);
+      doc.setFont("helvetica", "normal");
+      const infoLines = doc.splitTextToSize(data.recommendation, contentWidth);
+      doc.text(infoLines, marginLeft, currentY);
+      currentY += (infoLines.length * 5) + 10;
+
+      // REKOMENDASI
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "bold");
+      doc.text("Rekomendasi", marginLeft, currentY);
+      currentY += 6;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      const recLines = doc.splitTextToSize(data.rekomendasi, contentWidth);
+      doc.text(recLines, marginLeft, currentY);
+      currentY += (recLines.length * 5) + 2;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(50, 50, 50);
+      const recDetailLines = doc.splitTextToSize(data.rekomendasiDetail, contentWidth);
+      doc.text(recDetailLines, marginLeft, currentY);
+
+      doc.save(`Hasil-Penilaian-${score}%.pdf`);
+    } catch (err) {
+      console.error('Failed to generate PDF:', err);
+      alert('Gagal menghasilkan PDF.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   useEffect(() => {
     if (score === null || isNaN(score)) {
@@ -231,8 +363,11 @@ function ThankYouContent() {
                   </div>
                   
                   <div className={`relative p-5 md:p-6 pt-7 rounded-2xl border shadow-sm ${data.borderSoft} ${data.bgSoft} bg-opacity-40 overflow-hidden`}>
-                    <p className="text-sm font-semibold text-neutral-800 leading-relaxed text-justify relative z-10">
+                    <p className="text-sm font-semibold text-neutral-800 leading-relaxed text-justify relative z-10 mb-3">
                       {data.rekomendasi}
+                    </p>
+                    <p className="text-sm font-semibold text-neutral-800 leading-relaxed text-justify relative z-10">
+                      {data.rekomendasiDetail}
                     </p>
                     
                     <div className={`absolute -right-6 -bottom-6 opacity-[0.04] pointer-events-none ${data.textColor}`}>
@@ -246,11 +381,29 @@ function ThankYouContent() {
           </motion.div>
         )}
 
-        <Link href="/">
-          <Button variant="outline" className="w-full py-6 text-sm font-semibold rounded-xl border-neutral-200 hover:bg-neutral-50 text-neutral-700">
-            Kembali ke Form Penilaian
-          </Button>
-        </Link>
+        {/* CTA Buttons */}
+        <div className="flex flex-col gap-3 mt-6">
+          {data && (
+            <button
+              onClick={handleDownloadPDF}
+              disabled={isDownloading}
+              className={`w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+                isDownloading
+                  ? 'bg-neutral-100 text-neutral-400 cursor-not-allowed'
+                  : `${data.barColor} text-white shadow-md hover:opacity-90`
+              }`}
+            >
+              <Download className="w-4 h-4" />
+              {isDownloading ? 'Menyiapkan PDF...' : 'Unduh Hasil sebagai PDF'}
+            </button>
+          )}
+
+          <Link href="/">
+            <Button variant="outline" className="w-full py-6 text-sm font-semibold rounded-xl border-neutral-200 hover:bg-neutral-50 text-neutral-700">
+              Kembali ke Form Penilaian
+            </Button>
+          </Link>
+        </div>
       </motion.div>
     </div>
   );

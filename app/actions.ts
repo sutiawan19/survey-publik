@@ -14,9 +14,10 @@ interface AssessmentPayload {
 export async function submitAssessment(payload: AssessmentPayload) {
   const supabase = await createClient()
 
-  // Calculate overall score from answers
-  // answers object has format: { "tangibles_1": 5, "tangibles_2": 4, ... }
-  const answerValues = Object.values(payload.answers) as number[];
+  // Calculate overall score from answers — skip any _metadata keys
+  const answerValues = Object.entries(payload.answers)
+    .filter(([key]) => !key.startsWith('_metadata'))
+    .map(([, val]) => Number(val));
   const sum = answerValues.reduce((acc, val) => acc + val, 0);
   const overall_score = answerValues.length > 0 ? Number((sum / answerValues.length).toFixed(2)) : 0;
 

@@ -15,21 +15,31 @@ const FADE_UP = {
 };
 
 const QUESTION_MAPPING: Record<string, string> = {
-  tangibles_1: "Seberapa baik pemanfaatan sarana dan prasarana pelayanan publik?",
-  tangibles_2: "Seberapa baik pemanfaatan teknologi dalam proses pelayanan?",
-  tangibles_3: "Seberapa baik pemanfaatan sumber daya manusia dalam meningkatkan kualitas pelayanan?",
-  reliability_1: "Seberapa baik pembagian tugas serta kewenangan dalam organisasi?",
-  reliability_2: "Seberapa baik prosedur pelayanan dalam mendukung kelancaran pelayanan?",
-  reliability_3: "Seberapa baik ketepatan waktu dalam penyelesaian pelayanan?",
-  responsiveness_1: "Seberapa baik arahan pemimpin dalam mendukung pelayanan?",
-  responsiveness_2: "Seberapa baik kerja sama antarbidang dalam menyelesaikan suatu masalah?",
-  responsiveness_3: "Seberapa baik komunikasi antarunit kerja?",
-  assurance_1: "Seberapa baik pengawasan terhadap pelaksanaan pelayanan?",
-  assurance_2: "Seberapa baik kompetensi pegawai?",
-  assurance_3: "Seberapa baik pengembangan dan pelatihan pegawai?",
-  empathy_1: "Seberapa baik dukungan pemimpin dalam menyelesaikan kendala?",
-  empathy_2: "Seberapa baik evaluasi yang dilakukan pemimpin?",
-  empathy_3: "Seberapa baik jumlah pegawai yang tersedia?"
+  tangibles_1: "Fasilitas pelayanan tersedia dalam kondisi baik dan memadai.",
+  tangibles_2: "Ruang pelayanan bersih, nyaman, dan tertata rapi.",
+  tangibles_3: "Peralatan yang digunakan dalam pelayanan berfungsi dengan baik.",
+  tangibles_4: "Petugas pelayanan berpenampilan rapi dan profesional.",
+  tangibles_5: "Informasi pelayanan mudah ditemukan dan dipahami.",
+  reliability_1: "Pelayanan diberikan sesuai dengan prosedur yang berlaku.",
+  reliability_2: "Petugas menyelesaikan pelayanan sesuai waktu yang dijanjikan.",
+  reliability_3: "Hasil pelayanan yang diterima sudah sesuai dengan kebutuhan.",
+  reliability_4: "Petugas memberikan pelayanan secara konsisten kepada setiap pengguna layanan.",
+  reliability_5: "Kesalahan dalam proses pelayanan jarang terjadi.",
+  responsiveness_1: "Petugas segera melayani ketika masyarakat membutuhkan bantuan.",
+  responsiveness_2: "Petugas cepat menanggapi pertanyaan atau keluhan.",
+  responsiveness_3: "Informasi yang dibutuhkan diberikan dengan cepat.",
+  responsiveness_4: "Petugas bersedia membantu ketika terjadi kendala dalam pelayanan.",
+  responsiveness_5: "Waktu tunggu pelayanan tergolong cepat.",
+  assurance_1: "Petugas memiliki kemampuan yang baik dalam memberikan pelayanan.",
+  assurance_2: "Petugas memberikan informasi yang jelas dan dapat dipercaya.",
+  assurance_3: "Saya merasa aman dalam menggunakan layanan yang diberikan.",
+  assurance_4: "Petugas bersikap sopan dan menghormati pengguna layanan.",
+  assurance_5: "Petugas mampu memberikan kepastian terhadap proses pelayanan.",
+  empathy_1: "Petugas memberikan perhatian kepada setiap pengguna layanan.",
+  empathy_2: "Petugas melayani tanpa membedakan latar belakang pengguna layanan.",
+  empathy_3: "Petugas memahami kebutuhan masyarakat dengan baik.",
+  empathy_4: "Petugas berkomunikasi dengan ramah dan santun.",
+  empathy_5: "Petugas memberikan solusi yang sesuai terhadap permasalahan pengguna layanan."
 };
 
 interface ResponsesClientProps {
